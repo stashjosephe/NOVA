@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova Admin</title>
+<style>
+:root{--bg:#F6F2FF;--ink:#1D1342;--card:#fff;--mut:#5D5580;--pink:#FF4F9A;--lemon:#FFE45C;--sky:#59C9FF;--line:#1D134226;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#150E2E;--ink:#F3EEFF;--card:#221848;--mut:#B4A9D9;--line:#F3EEFF2b;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+h1,h2,h3{margin:0;letter-spacing:-.02em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+.btn{background:var(--ink);color:var(--bg);border:2px solid var(--ink);border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn.p{background:var(--pink);color:#fff}.btn.o{background:transparent;color:var(--ink)}.btn.d{background:transparent;color:#d6194f;border-color:#d6194f}
+input,select,textarea{width:100%;border:2px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--card)}
+label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.88rem}
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.box{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:28px;width:min(380px,100%);box-shadow:6px 6px 0 var(--ink);display:flex;flex-direction:column;gap:14px}
+.logo{font:800 1.8rem system-ui;letter-spacing:-.04em}.logo i{color:var(--pink);font-style:normal}
+#app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+aside{border-right:2px solid var(--ink);padding:18px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+aside button{text-align:left;background:none;border:0;border-radius:10px;padding:9px 12px;font-weight:600;cursor:pointer}
+aside button.on{background:var(--ink);color:var(--bg)}
+aside .sp{flex:1}
+main{padding:26px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:16px}
+.stat b{display:block;font-size:2rem;line-height:1.1}.stat span{color:var(--mut)}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:16px}
+.tw{overflow-x:auto;border:2px solid var(--ink);border-radius:14px;background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.8rem;color:var(--mut)}
+tbody tr.click{cursor:pointer}tbody tr.click:hover{background:color-mix(in srgb,var(--pink) 10%,transparent)}
+.bd{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.8rem;font-weight:600;background:var(--lemon);color:#1D1342}
+.bd.new{background:var(--pink);color:#fff}.bd.quoted,.bd.confirmed{background:var(--sky);color:#1D1342}.bd.delivered{background:#7CF2C4;color:#1D1342}.bd.cancelled{background:#999;color:#fff}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0}.bar i{display:block;height:12px;border-radius:6px;background:var(--pink);min-width:4px}.bar span{width:90px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.row>*{flex:1 1 150px}
+dialog{border:2px solid var(--ink);border-radius:18px;background:var(--card);color:var(--ink);width:min(680px,94vw);padding:22px;max-height:92vh}
+dialog::backdrop{background:#1d134299}
+.form{display:grid;gap:12px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.items{display:grid;gap:8px}.it{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px}
+.it img{width:64px;height:64px;object-fit:cover;border-radius:8px;background:var(--line)}
+dl{display:grid;grid-template-columns:110px 1fr;gap:4px 12px;margin:0}dt{color:var(--mut)}dd{margin:0}
+.sw{display:inline-block;width:34px;height:20px;border-radius:6px;border:2px solid var(--ink)}
+.msg{color:#d6194f;min-height:1.2em;margin:0}
+@media (max-width:760px){#app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:2px solid var(--ink)}aside .sp{display:none}.g2{grid-template-columns:1fr}}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="login">
+  <form class="box" id="lf">
+    <div class="logo">nova<i>*</i> admin</div>
+    <label>Username<input id="lu" autocomplete="username" required value="admin"></label>
+    <label>Password<input id="lp" type="password" autocomplete="current-password" required></label>
+    <p class="msg" id="lm" role="alert"></p>
+    <button class="btn p">Sign in</button>
+  </form>
+</div>
+
+<div id="app" class="hide">
+  <aside>
+    <div class="logo" style="margin-bottom:12px">nova<i>*</i></div>
+    <button data-v="dash">Dashboard</button><button data-v="orders">Orders</button>
+    <button data-v="products">Products</button><button data-v="subs">Subscribers</button>
+    <div class="sp"></div>
+    <button id="pw">Change password</button><button id="out">Sign out</button>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<dialog id="dlg"></dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const ST=['new','quoted','confirmed','printing','shipped','delivered','cancelled'];
+let tok=sessionStorage.getItem('nova_tok')||'',view='dash';
+
+async function api(p,o={}){
+  const r=await fetch('/api/admin'+p,{...o,headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok,...(o.headers||{})}});
+  if(r.status===401&&tok){logout();throw new Error('Session expired')}
+  if(!r.ok){let j={};try{j=await r.json()}catch{}throw new Error(typeof j.detail==='string'?j.detail:(j.detail&&j.detail[0]&&j.detail[0].msg)||'Request failed')}
+  return r;
+}
+const J=async(p,o)=>{const r=await api(p,o);return r.status===204?null:r.json()};
+const body=o=>({body:JSON.stringify(o)});
+const fmt=d=>d?new Date(d).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}):'';
+const inr=n=>n==null?'Not quoted':'\u20b9'+Number(n).toLocaleString('en-IN');
+const badge=s=>`<span class="bd ${s}">${s}</span>`;
+function alertErr(e){alert(e.message)}
+
+/* auth */
+$('#lf').onsubmit=async e=>{e.preventDefault();$('#lm').textContent='';
+  try{const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('#lu').value,password:$('#lp').value})});
+    const j=await r.json();if(!r.ok)throw new Error(j.detail||'Login failed');
+    tok=j.token;sessionStorage.setItem('nova_tok',tok);start()}catch(err){$('#lm').textContent=err.message}};
+function logout(){tok='';sessionStorage.removeItem('nova_tok');$('#app').classList.add('hide');$('#login').classList.remove('hide');$('#lp').value=''}
+$('#out').onclick=logout;
+function start(){$('#login').classList.add('hide');$('#app').classList.remove('hide');go(view)}
+document.querySelector('aside').onclick=e=>{const v=e.target.dataset.v;if(v)go(v)};
+function go(v){view=v;document.querySelectorAll('aside [data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  ({dash,orders,products,subs})[v]().catch(alertErr)}
+
+/* dashboard */
+async function dash(){const s=await J('/stats'),max=Math.max(1,...Object.values(s.by_status));
+  $('#main').innerHTML=`<div class="top"><h2>Dashboard</h2></div>
+  <div class="stats"><div class="stat"><b>${s.orders}</b><span>Total orders</span></div><div class="stat"><b>${s.today}</b><span>Orders today</span></div>
+  <div class="stat"><b>${s.by_status.new}</b><span>Waiting for a quote</span></div><div class="stat"><b>${inr(s.quoted_value)}</b><span>Quoted value</span></div>
+  <div class="stat"><b>${s.subscribers}</b><span>Subscribers</span></div><div class="stat"><b>${s.products}</b><span>Live products</span></div></div>
+  <div class="panel"><h3 style="margin-bottom:10px">Orders by status</h3>${ST.map(k=>`<div class="bar"><span>${k}</span><i style="width:${s.by_status[k]/max*60}%"></i><b>${s.by_status[k]}</b></div>`).join('')}</div>`}
+
+/* orders */
+let of={status:'',q:''};
+async function orders(){
+  const qs=new URLSearchParams(of).toString(),d=await J('/orders?'+qs);
+  $('#main').innerHTML=`<div class="top"><h2>Orders <small style="color:var(--mut)">(${d.total})</small></h2><button class="btn o" id="csv">Export CSV</button></div>
+  <div class="row" style="margin-bottom:14px"><label>Status<select id="fs"><option value="">All</option>${ST.map(s=>`<option ${of.status===s?'selected':''}>${s}</option>`).join('')}</select></label>
+  <label>Search<input id="fq" placeholder="Code, name, email or phone" value="${esc(of.q)}"></label></div>
+  <div class="tw"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Status</th><th>Quote</th><th>Placed</th></tr></thead><tbody>
+  ${d.orders.map(o=>`<tr class="click" tabindex="0" data-id="${o.id}"><td><b>${esc(o.code)}</b></td><td>${esc(o.name)}<br><small>${esc(o.city)}</small></td><td>${o.item_count}</td><td>${badge(o.status)}</td><td>${inr(o.amount)}</td><td>${fmt(o.created_at)}</td></tr>`).join('')||'<tr><td colspan="6">No orders yet.</td></tr>'}</tbody></table></div>`;
+  $('#fs').onchange=e=>{of.status=e.target.value;orders()};
+  let t;$('#fq').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{of.q=e.target.value;orders().then(()=>{const i=$('#fq');i.focus();i.setSelectionRange(99,99)})},350)};
+  $('#csv').onclick=async()=>{const r=await api('/orders/export.csv?'+qs),a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='nova-orders.csv';a.click()};
+  const open=e=>{const tr=e.target.closest('tr[data-id]');if(tr)openOrder(tr.dataset.id)};
+  $('tbody').onclick=open;$('tbody').onkeydown=e=>{if(e.key==='Enter')open(e)};
+}
+async function openOrder(id){
+  const o=await J('/orders/'+id),dl=$('#dlg');
+  dl.innerHTML=`<div class="form"><div class="top" style="margin:0"><h2>${esc(o.code)} ${badge(o.status)}</h2><button class="btn o" id="x">Close</button></div>
+  <dl><dt>Customer</dt><dd>${esc(o.name)}</dd><dt>Phone</dt><dd>${esc(o.phone)}</dd><dt>Email</dt><dd>${esc(o.email)}</dd>
+  <dt>Ship to</dt><dd>${esc(o.address)}, ${esc(o.city)} ${esc(o.pincode)}</dd><dt>Delivery</dt><dd>${esc(o.delivery)}</dd><dt>Payment</dt><dd>${esc(o.payment)}</dd>
+  <dt>Customer note</dt><dd>${esc(o.note)||'None'}</dd><dt>Placed</dt><dd>${fmt(o.created_at)}</dd></dl>
+  <div class="items">${o.items.map(i=>`<div class="it">${i.image?`<img alt="Customer upload" data-img="${esc(i.image)}">`:''}<div><b>${i.qty}\u00d7 ${esc(i.name)}</b><br><small>${esc(i.details)}</small></div></div>`).join('')}</div>
+  <div class="g2"><label>Status<select id="os">${ST.map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></label>
+  <label>Quoted amount (\u20b9)<input id="oa" type="number" min="0" step="1" value="${o.amount??''}"></label></div>
+  <label>Internal note<textarea id="on" rows="3">${esc(o.admin_note)}</textarea></label>
+  <div class="row"><button class="btn p" id="sv">Save changes</button><button class="btn d" id="dl">Delete order</button></div></div>`;
+  dl.showModal();
+  dl.querySelectorAll('img[data-img]').forEach(async im=>{try{const r=await api('/uploads/'+im.dataset.img);im.src=URL.createObjectURL(await r.blob());im.onclick=()=>window.open(im.src)}catch{}});
+  $('#x').onclick=()=>dl.close();
+  $('#sv').onclick=async()=>{try{const a=$('#oa').value;await J('/orders/'+id,{method:'PATCH',...body({status:$('#os').value,amount:a===''?null:+a,admin_note:$('#on').value})});dl.close();orders()}catch(e){alertErr(e)}};
+  $('#dl').onclick=async()=>{if(confirm('Delete this order and its uploaded images?')){try{await J('/orders/'+id,{method:'DELETE'});dl.close();orders()}catch(e){alertErr(e)}}};
+}
+
+/* products */
+async function products(){
+  const d=await J('/products');
+  $('#main').innerHTML=`<div class="top"><h2>Products</h2><button class="btn p" id="np">Add product</button></div>
+  <div class="tw"><table><thead><tr><th>Design</th><th>Category</th><th>Description</th><th>Live</th><th></th></tr></thead><tbody>
+  ${d.map(p=>`<tr><td><span class="sw" style="background:linear-gradient(135deg,${esc(p.color1)},${esc(p.color2)})"></span> <b>${esc(p.name)}</b> ${p.tag?`<span class="bd">${esc(p.tag)}</span>`:''}</td><td>${esc(p.category)}</td><td>${esc(p.description)}</td><td>${p.active?'Yes':'Hidden'}</td><td><button class="btn o" data-e="${p.id}">Edit</button></td></tr>`).join('')}</tbody></table></div>`;
+  $('#np').onclick=()=>pform();
+  $('tbody').onclick=e=>{const id=e.target.dataset.e;if(id)pform(d.find(p=>p.id==id))};
+}
+function pform(p={}){
+  const dl=$('#dlg'),v=(k,d='')=>esc(p[k]??d);
+  dl.innerHTML=`<form class="form" id="pf"><h2>${p.id?'Edit':'New'} product</h2>
+  <label>Name<input id="pn" required maxlength="100" value="${v('name')}"></label>
+  <div class="g2"><label>Category<select id="pc">${['Polaroids','Posters','Stickers'].map(c=>`<option ${p.category===c?'selected':''}>${c}</option>`).join('')}</select></label>
+  <label>Badge (optional)<input id="pt" maxlength="20" value="${v('tag')}" placeholder="New, Bestseller"></label></div>
+  <label>Description<input id="pd" maxlength="200" value="${v('description')}"></label>
+  <div class="g2"><label>Color 1<input id="p1" type="color" value="${v('color1','#FF8A3D')}"></label><label>Color 2<input id="p2" type="color" value="${v('color2','#FF4F9A')}"></label></div>
+  <div class="g2"><label>Sticker emoji (optional)<input id="pe" maxlength="8" value="${v('emoji')}"></label><label>Sort order<input id="ps" type="number" value="${v('sort',0)}"></label></div>
+  <label style="flex-direction:row;align-items:center;gap:8px"><input id="pa" type="checkbox" style="width:auto" ${p.active===0?'':'checked'}> Show in store</label>
+  <div class="row"><button class="btn p">Save</button><button type="button" class="btn o" id="pc2">Cancel</button>${p.id?'<button type="button" class="btn d" id="pdl">Delete</button>':''}</div></form>`;
+  dl.showModal();$('#pc2').onclick=()=>dl.close();
+  $('#pf').onsubmit=async e=>{e.preventDefault();const b={name:$('#pn').value,category:$('#pc').value,description:$('#pd').value,tag:$('#pt').value,emoji:$('#pe').value,color1:$('#p1').value,color2:$('#p2').value,active:$('#pa').checked,sort:+$('#ps').value||0};
+    try{await J(p.id?'/products/'+p.id:'/products',{method:p.id?'PUT':'POST',...body(b)});dl.close();products()}catch(err){alertErr(err)}};
+  if(p.id)$('#pdl').onclick=async()=>{if(confirm('Delete this product? Past orders keep their item names.')){try{await J('/products/'+p.id,{method:'DELETE'});dl.close();products()}catch(err){alertErr(err)}}};
+}
+
+/* subscribers */
+async function subs(){
+  const d=await J('/subscribers');
+  $('#main').innerHTML=`<div class="top"><h2>Subscribers <small style="color:var(--mut)">(${d.length})</small></h2><button class="btn o" id="cp">Copy all emails</button></div>
+  <div class="tw"><table><thead><tr><th>Email</th><th>Joined</th><th></th></tr></thead><tbody>${d.map(s=>`<tr><td>${esc(s.email)}</td><td>${fmt(s.created_at)}</td><td><button class="btn d" data-s="${s.id}">Remove</button></td></tr>`).join('')||'<tr><td colspan="3">No subscribers yet.</td></tr>'}</tbody></table></div>`;
+  $('#cp').onclick=()=>navigator.clipboard.writeText(d.map(s=>s.email).join(', ')).then(()=>alert('Copied'));
+  $('tbody').onclick=async e=>{const id=e.target.dataset.s;if(id&&confirm('Remove this subscriber?')){try{await J('/subscribers/'+id,{method:'DELETE'});subs()}catch(err){alertErr(err)}}};
+}
+
+/* password */
+$('#pw').onclick=()=>{const dl=$('#dlg');
+  dl.innerHTML=`<form class="form" id="cf"><h2>Change password</h2><label>Current password<input id="c0" type="password" required autocomplete="current-password"></label>
+  <label>New password (10+ characters)<input id="c1" type="password" required minlength="10" autocomplete="new-password"></label>
+  <div class="row"><button class="btn p">Update password</button><button type="button" class="btn o" id="cx">Cancel</button></div></form>`;
+  dl.showModal();$('#cx').onclick=()=>dl.close();
+  $('#cf').onsubmit=async e=>{e.preventDefault();try{await J('/password',{method:'POST',...body({current:$('#c0').value,new:$('#c1').value})});dl.close();alert('Password updated')}catch(err){alertErr(err)}}};
+
+if(tok)start();
+</script>
+</body>
+</html>
